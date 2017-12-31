@@ -1,10 +1,8 @@
 <?php
 class rsa{
-	private $public_key;
-	private $private_key;
 	/**
 	 * 生成公私钥
-	 * @return boolean
+	 * @return array|false
 	 */
 	public function create_key(){
 		$config=array(
@@ -16,44 +14,46 @@ class rsa{
 		if($res==false) return false;
 		openssl_pkey_export($res,$private_key,null,$config);
 		$public_key=openssl_pkey_get_details($res)["key"];
-		$this->public_key=$public_key;
-		$this->private_key=$private_key;
-		return true;
-	}
-	/**
-	 * 私钥加密
-	 * @param $code [数据]
-	 * @return string
-	 */
-	public function private_encrypt(string $code){
-		openssl_private_encrypt($code,$output,$this->private_key);
-		return base64_encode($output);
-	}
-	/**
-	 *  私钥解密
-	 * @param $code [公钥加密密文]
-	 * @return string
-	 */
-	public function public_decrypt(string $code){
-		openssl_public_decrypt(base64_decode($code),$output,$this->public_key);
-		return $output;
+		return array($public_key,$private_key);
 	}
 	/**
 	 * 公钥加密
 	 * @param $code [数据]
+	 * @param $key [公钥]
 	 * @return string
 	 */
-	public function public_encrypt(string $code){
-		openssl_public_encrypt($code,$output,$this->public_key);
+	public function public_encrypt(string $code,string $key){
+		openssl_public_encrypt($code,$output,self::format_key($key));
 		return base64_encode($output);
 	}
 	/**
 	 * 公钥解密
 	 * @param $code [私钥加密密文]
+	 * @param $key [公钥]
 	 * @return string
 	 */
-	public function private_decrypt(string $code){
-		openssl_private_decrypt(base64_decode($code),$output,$this->private_key);
+	public function public_decrypt(string $code,string $key){
+		openssl_public_decrypt(base64_decode($code),$output,self::format_key($key));
+		return $output;
+	}
+	/**
+	 * 私钥加密
+	 * @param $code [数据]
+	 * @param $key [私钥]
+	 * @return string
+	 */
+	public function private_encrypt(string $code,string $key){
+		openssl_private_encrypt($code,$output,self::format_key($key,false));
+		return base64_encode($output);
+	}
+	/**
+	 *  私钥解密
+	 * @param $code [公钥加密密文]
+	 * @param $key [私钥]
+	 * @return string
+	 */
+	public function private_decrypt(string $code,string $key){
+		openssl_private_decrypt(base64_decode($code),$output,self::format_key($key,false));
 		return $output;
 	}
 	/**
@@ -62,7 +62,8 @@ class rsa{
 	 * @param $public [是否为公钥]
 	 * @return string
 	 */
-	function format_key(string $key,bool $public=true){
+	private function format_key(string $key,bool $public=true){
+		if(stripos($key,'-----')!==false) return $key;
 		$pem=chunk_split($key,64,PHP_EOL);
 		if($public) return '-----BEGIN PUBLIC KEY-----'.PHP_EOL.$pem.'-----END PUBLIC KEY-----';
 		else return '-----BEGIN PRIVATE KEY-----'.PHP_EOL.$pem.'-----END PRIVATE KEY-----';
