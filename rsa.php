@@ -31,7 +31,7 @@
 				$data=substr($data,strlen($chunk));
 				if($public) $result[]=self::public_encrypt($chunk,$key);
 				else $result[]=self::private_encrypt($chunk,$key);
-				unset($msg);
+				unset($chunk);
 			}
 			return implode('**&&**',$result);
 		}
