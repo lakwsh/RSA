@@ -27,9 +27,14 @@ class rsa{
 	 * @return array|false
 	 */
 	public function create_key(){
-		$res=openssl_pkey_new();
+		$config=array(
+			'digest_alg'=>'sha1',
+			'private_key_bits'=>1024,
+			'private_key_type'=>OPENSSL_KEYTYPE_RSA
+		);
+		$res=openssl_pkey_new($config);
 		if($res==false) return false;
-		openssl_pkey_export($res,$private_key);
+		openssl_pkey_export($res,$private_key,null,$config);
 		$public_key=openssl_pkey_get_details($res);
 		return array('public_key'=>$public_key["key"],'private_key'=>$private_key);
 	}
