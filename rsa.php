@@ -1,6 +1,13 @@
 <?php
 	class RSA{
-		private $key_len=1024;
+		private $key_len;
+		/**
+		 * 构造函数
+		 * @param $len [key长度]
+		 */
+		public function __construct($len=1024){
+			$this->key_len=$len;
+		}
 		/**
 		 * 生成公私钥
 		 * @return array|false
