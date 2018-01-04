@@ -14,12 +14,16 @@
 		 */
 		public function create_key(){
 			$config=array(
-				'digest_alg'=>'sha1',
+				'config'=>dirname(__FILE__).'/openssl.cnf',
+				'digest_alg'=>'sha256',
 				'private_key_bits'=>$this->key_len,
 				'private_key_type'=>OPENSSL_KEYTYPE_RSA
 			);
 			$res=openssl_pkey_new($config);
-			if($res==false) return false;
+			if($res==false){
+				echo(openssl_error_string());
+				return false;
+			}
 			openssl_pkey_export($res,$private_key,null,$config);
 			$public_key=openssl_pkey_get_details($res)["key"];
 			return array($public_key,$private_key);
